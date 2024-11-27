@@ -109,16 +109,67 @@ values
     -- 2. 將用戶`肌肉棒子`新增為教練，並且年資設定為2年
     -- 3. 將用戶`Q太郎`新增為教練，並且年資設定為2年
 
+insert into "COACH" (user_id, experience_years)
+values
+    ((select id from "USER" where email = 'lee2000@hexschooltest.io'), 2),
+    ((select id from "USER" where email = 'muscle@hexschooltest.io'), 2),
+    ((select id from "USER" where email = 'starplatinum@hexschooltest.io'), 2);
+
 -- 3-2. 新增：承1，為三名教練新增專長資料至 `COACH_LINK_SKILL` ，資料需求如下：
     -- 1. 所有教練都有 `重訓` 專長
     -- 2. 教練`肌肉棒子` 需要有 `瑜伽` 專長
     -- 3. 教練`Q太郎` 需要有 `有氧運動` 與 `復健訓練` 專長
 
+-- 3-2-1
+insert into "COACH_LINK_SKILL" (coach_id, skill_id)
+select c.id, s.id
+from "COACH" c
+cross join "SKILL" s
+where s.name = '重訓';
+
+-- 3-2-2
+insert into "COACH_LINK_SKILL" (coach_id, skill_id)
+values
+(
+    (select id from "COACH" c where c.user_id = (select id from "USER" u where name = '肌肉棒子')),
+    (select id from "SKILL" where name = '瑜伽')
+);
+
+-- 3-2-3
+insert into "COACH_LINK_SKILL" (coach_id, skill_id)
+select c.id, s.id
+from "COACH" c
+join "USER" u on u.id = c.user_id
+join "SKILL" s on s."name" in ('有氧運動', '復健訓練')
+where u.name = 'Q太郎'
+
+-- 自我挑戰：使用 inner join 來查 COACH_LINK_SKILL
+/*
+select u."name" as coach_name, s.name as skill_name
+from "COACH_LINK_SKILL" cls
+inner join "COACH" c on cls.coach_id = c.id
+inner join "USER" u on u.id = c.user_id 
+inner join "SKILL" s on cls.skill_id = s.id;
+*/
+
 -- 3-3 修改：更新教練的經驗年數，資料需求如下：
     -- 1. 教練`肌肉棒子` 的經驗年數為3年
     -- 2. 教練`Q太郎` 的經驗年數為5年
+update "COACH" c
+set experience_years =  case u.name
+	when '肌肉棒子' then 3
+	when 'Q太郎' then 5
+end
+from "USER" u
+where c.user_id = u.id and u.name in ('肌肉棒子', 'Q太郎');
 
 -- 3-4 刪除：新增一個專長 空中瑜伽 至 SKILL 資料表，之後刪除此專長。
+insert into "SKILL" ("name")
+values
+	('空中瑜伽');
+
+DELETE from "SKILL"
+where name = '空中瑜伽'
 
 
 --  ████████  █████   █    █   █ 
