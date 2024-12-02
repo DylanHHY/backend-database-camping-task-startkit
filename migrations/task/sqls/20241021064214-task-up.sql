@@ -141,7 +141,7 @@ SELECT c.id, s.id
 FROM "COACH" c
 JOIN "USER" u on u.id = c.user_id
 JOIN "SKILL" s on s."name" in ('有氧運動', '復健訓練')
-WHERE u.name = 'Q太郎'
+WHERE u.name = 'Q太郎';
 
 -- 自我挑戰：使用 inner JOIN 來查 COACH_LINK_SKILL
 /*
@@ -170,7 +170,7 @@ VALUES
 	('空中瑜伽');
 
 DELETE FROM "SKILL"
-WHERE name = '空中瑜伽'
+WHERE name = '空中瑜伽';
 
 
 --  ████████  █████   █    █   █ 
@@ -349,14 +349,53 @@ WHERE u.name = '王小明';
 -- 6-1 查詢：查詢專長為重訓的教練，並按經驗年數排序，由資深到資淺（需使用 inner join 與 order by 語法)
 -- 顯示須包含以下欄位： 教練名稱 , 經驗年數, 專長名稱
 
+SELECT 
+	u.name AS coach_name,
+	c.experience_years AS experience_years,
+	s.name AS skill_name
+FROM "USER" u
+INNER JOIN "COACH" c ON c.user_id = u.id
+LEFT JOIN "COACH_LINK_SKILL" cls ON cls.coach_id = c.id 
+INNER JOIN "SKILL" s ON s.id = cls.skill_id 
+WHERE cls.skill_id = (SELECT id FROM "SKILL" WHERE name = '重訓')
+ORDER BY c.experience_years DESC;
+
 -- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 group by, inner join 與 order by 與 limit 語法）
 -- 顯示須包含以下欄位： 專長名稱, coach_total
+
+SELECT 
+	s.name AS skill_name,
+	COUNT(cls.coach_id) AS coach_name 
+FROM "COACH_LINK_SKILL" cls
+INNER JOIN "SKILL" s ON s.id = cls.skill_id
+GROUP BY s."name"
+ORDER BY coach_name DESC
+LIMIT 1;
 
 -- 6-3. 查詢：計算 11 月份組合包方案的銷售數量
 -- 顯示須包含以下欄位： 組合包方案名稱, 銷售數量
 
+SELECT 
+	cpack.name AS package_name,
+	count(cpack."name")	AS total
+FROM "CREDIT_PURCHASE" cp 
+INNER JOIN "CREDIT_PACKAGE" cpack ON cpack.id = cp.credit_package_id
+GROUP BY cpack.name;
+
 -- 6-4. 查詢：計算 11 月份總營收（使用 purchase_at 欄位統計）
 -- 顯示須包含以下欄位： 總營收
 
+SELECT 
+	sum(cpack.price) AS total_revenue
+FROM "CREDIT_PURCHASE" cp 
+INNER JOIN "CREDIT_PACKAGE" cpack ON cpack.id = cp.credit_package_id
+WHERE cp.purchase_at::TIMESTAMP BETWEEN '2024-11-01' AND '2024-11-30 23:59:59';
+
 -- 6-5. 查詢：計算 11 月份有預約課程的會員人數（需使用 Distinct，並用 created_at 和 status 欄位統計）
 -- 顯示須包含以下欄位： 預約會員人數
+
+SELECT 
+    COUNT(DISTINCT created_at) 
+FROM "COURSE_BOOKING" cb
+WHERE cb.created_at IS NOT NULL 
+  AND status NOT IN ('已取消');
