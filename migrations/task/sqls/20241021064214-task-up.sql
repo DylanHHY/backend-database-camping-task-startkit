@@ -350,9 +350,9 @@ WHERE u.name = '王小明';
 -- 顯示須包含以下欄位： 教練名稱 , 經驗年數, 專長名稱
 
 SELECT 
-	u.name AS coach_name,
-	c.experience_years AS experience_years,
-	s.name AS skill_name
+	u.name AS "教練名稱",
+	c.experience_years AS "經驗年數",
+	s.name AS "專長名稱"
 FROM "USER" u
 INNER JOIN "COACH" c ON c.user_id = u.id
 LEFT JOIN "COACH_LINK_SKILL" cls ON cls.coach_id = c.id 
@@ -364,20 +364,20 @@ ORDER BY c.experience_years DESC;
 -- 顯示須包含以下欄位： 專長名稱, coach_total
 
 SELECT 
-	s.name AS skill_name,
-	COUNT(cls.coach_id) AS coach_name 
+	s.name AS "專長名稱",
+	COUNT(cls.coach_id) AS coach_total 
 FROM "COACH_LINK_SKILL" cls
 INNER JOIN "SKILL" s ON s.id = cls.skill_id
 GROUP BY s."name"
-ORDER BY coach_name DESC
+ORDER BY coach_total DESC
 LIMIT 1;
 
 -- 6-3. 查詢：計算 11 月份組合包方案的銷售數量
 -- 顯示須包含以下欄位： 組合包方案名稱, 銷售數量
 
 SELECT 
-	cpack.name AS package_name,
-	count(cpack."name")	AS total
+	cpack.name AS "組合包方案名稱",
+	count(cpack."name")	AS "銷售數量"
 FROM "CREDIT_PURCHASE" cp 
 INNER JOIN "CREDIT_PACKAGE" cpack ON cpack.id = cp.credit_package_id
 GROUP BY cpack.name;
@@ -386,7 +386,7 @@ GROUP BY cpack.name;
 -- 顯示須包含以下欄位： 總營收
 
 SELECT 
-	sum(cpack.price) AS total_revenue
+	sum(cpack.price) AS "總營收"
 FROM "CREDIT_PURCHASE" cp 
 INNER JOIN "CREDIT_PACKAGE" cpack ON cpack.id = cp.credit_package_id
 WHERE cp.purchase_at::TIMESTAMP BETWEEN '2024-11-01' AND '2024-11-30 23:59:59';
@@ -395,7 +395,7 @@ WHERE cp.purchase_at::TIMESTAMP BETWEEN '2024-11-01' AND '2024-11-30 23:59:59';
 -- 顯示須包含以下欄位： 預約會員人數
 
 SELECT 
-    COUNT(DISTINCT created_at) 
+    COUNT(DISTINCT created_at) AS "預約會員人數"
 FROM "COURSE_BOOKING" cb
 WHERE cb.created_at IS NOT NULL 
   AND status NOT IN ('已取消');
